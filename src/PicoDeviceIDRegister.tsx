@@ -38,6 +38,7 @@ const PicoDeviceIDRegister: React.FC<PicoDeviceIDRegisterProps> = ({ userId, onD
   );
 };
 
+
 const styles = StyleSheet.create({});
 
 export default PicoDeviceIDRegister;
