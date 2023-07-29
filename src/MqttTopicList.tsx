@@ -14,6 +14,7 @@ const MqttTopicList: React.FC<MqttTopicListProps> = ({ userId }) => {
     db.transaction((tx) => {
       tx.executeSql(
         'SELECT mqtt_topic FROM users WHERE user_id = ?',
+        
         [userId],
         (_, result) => {
           const topics = [];
