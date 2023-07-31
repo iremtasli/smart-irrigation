@@ -3,7 +3,7 @@ import { View, TextInput, Button, StyleSheet } from 'react-native';
 import db from './database';
 
 interface PicoDeviceIDRegisterProps {
-  userId: number;
+  userId: number; // Farm ID yerine User ID kullanacağız
   onDeviceIDRegistration: (registeredDeviceId: string) => void;
 }
 
@@ -14,7 +14,7 @@ const PicoDeviceIDRegister: React.FC<PicoDeviceIDRegisterProps> = ({ userId, onD
     db.transaction((tx) => {
       tx.executeSql(
         'INSERT INTO devices (user_id, device_id, mqtt_topic) VALUES (?, ?, ?)',
-        [userId, deviceId, ''],
+        [userId, deviceId, ''], // mqtt_topic alanını boş olarak ekliyoruz
         (_, result) => {
           console.log('PicoDevice ID registered successfully.');
           onDeviceIDRegistration(deviceId);
@@ -24,7 +24,8 @@ const PicoDeviceIDRegister: React.FC<PicoDeviceIDRegisterProps> = ({ userId, onD
         },
       );
     });
-  };
+  };;
+  
 
   return (
     <View>
@@ -37,7 +38,6 @@ const PicoDeviceIDRegister: React.FC<PicoDeviceIDRegisterProps> = ({ userId, onD
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({});
 

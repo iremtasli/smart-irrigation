@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, StyleSheet } from 'react-native';
 import db from './database';
-//import PicoDeviceList from './PicoDeviceList';
-//import MqttTopicList from './MqttTopicList';
+import PicoDeviceList from './PicoDeviceList';
+import MqttTopicList from './MqttTopicList';
 import MqttTopicsRegister from './MqttTopicsRegister';
+import PicoDeviceIDRegister from './PicoDeviceIDRegister';
 
 interface UserIdScreenProps {
   onUserIdEntered: (userId: number) => void;
@@ -45,7 +46,7 @@ const UserIdScreen: React.FC<UserIdScreenProps> = ({ onUserIdEntered }) => {
 
   return (
     <View style={styles.container}>
-      {!isUserRegistered && (
+      {!isUserRegistered ? (
         <>
           <TextInput
             style={styles.input}
@@ -56,13 +57,17 @@ const UserIdScreen: React.FC<UserIdScreenProps> = ({ onUserIdEntered }) => {
           />
           <Button title="Submit" onPress={handleUserIdSubmit} />
         </>
-      )}
-      {isUserRegistered && (
+      ) : (
         <>
-          
+          <PicoDeviceList userId={parseInt(userId, 10)} />
+          <MqttTopicList userId={parseInt(userId, 10)} />
+          <MqttTopicsRegister userId={parseInt(userId, 10)} deviceId="" />
+          <PicoDeviceIDRegister
+            userId={parseInt(userId, 10)}
+            onDeviceIDRegistration={() => setIsUserRegistered(true)}
+          />
         </>
       )}
-      {isUserRegistered && <MqttTopicsRegister userId={parseInt(userId, 10)} deviceId="" />}
     </View>
   );
 };

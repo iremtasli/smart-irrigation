@@ -1,3 +1,5 @@
+// MqttTopicList.tsx
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import db from './database';
@@ -14,10 +16,9 @@ const MqttTopicList: React.FC<MqttTopicListProps> = ({ userId }) => {
     db.transaction((tx) => {
       tx.executeSql(
         'SELECT mqtt_topic FROM users WHERE user_id = ?',
-        
         [userId],
         (_, result) => {
-          const topics = [];
+          const topics: string[] = [];
           for (let i = 0; i < result.rows.length; i++) {
             topics.push(result.rows.item(i).mqtt_topic);
           }
