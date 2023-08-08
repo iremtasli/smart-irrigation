@@ -45,6 +45,7 @@ function Section({ children, title }: SectionProps): JSX.Element {
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [message, setMessage] = useState('No Message Received');
+  const [topicMessage, setTopicMessage] = useState('No Message Received');
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -66,7 +67,7 @@ function App(): JSX.Element {
   useEffect(() => {
     console.log('useEffect');
     client.connect({ onSuccess: onConnect, useSSL: false });
-    readTopics()
+    readTopics();
   }, []);
 
   function onConnect() {
@@ -96,9 +97,31 @@ function App(): JSX.Element {
 
   function onMessageArrived(message) {
     var mqttMessage = message.payloadString;
-    setMessage(mqttMessage);
+    
+    AsyncStorage.getItem('mqtt_topics')
+    .then((mqtt_topics) => {
+      if (mqtt_topics) {
+        // Abonelik işlemini gerçekleştiriyoruz
+        const topics = mqtt_topics.split(',').map((topic) => topic.trim());
+        
+        if (message.destinationName === topics[1]) {
+          setMessage(mqttMessage);
+        }
+
+        if (message.destinationName === topics[0]) {
+          setTopicMessage(mqttMessage);
+        }
+      } else {
+        console.log('mqtt_topics not found in AsyncStorage');
+      }
+    })
+
     console.log(mqttMessage);
   }
+
+
+
+
   function readTopics(){
     AsyncStorage.getItem('mqtt_topics')
     .then((mqtt_topics) => {
@@ -139,47 +162,61 @@ function App(): JSX.Element {
       Toast.show({
         type: 'info',
         text1: 'Hata',
-        text2: 'Tekrar Deneyiniz'
+        text2: 'Tekrar Deneyiniz',
+        visibilityTime: 1000,
       });
     }
   }
 
 
   return (
-    <><SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor} />
+    <SafeAreaView style={[styles.container, styles.backgroundWhite]}>
+    <StatusBar
+      barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+      backgroundColor={Colors.white} />
+    <View style={styles.contentContainer}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title='FARM DATAS'>
-            <Text style={styles.highlight}>{message}</Text>
-          </Section>
+        style={styles.backgroundWhite}>
+        <View style={styles.sectionContainer}>
+            <Section title='FARM DATA'>
+              <Text style={styles.highlight}>{message}</Text>
+            </Section>
+  
+            <Section title='CONTROL YOUR FARM'>
+              <View style={styles.buttonContainer}>
+                <Button title='START IRRIGATION' onPress={() => publishMessage('OPEN')} />
+              </View>
+              <View style={styles.buttonContainer}>
+                <Button title='STOP IRRIGATION' onPress={() => publishMessage('CLOSE')} />
+              </View>
+              <Text style={styles.topicText}>Last Order: {topicMessage}</Text>
+            </Section>
+          </View>
+        </ScrollView>
+      </View>
+      <Toast />
+    </SafeAreaView>
+  );}
 
-          <Section title='CONTROL YOUR FARM'>
-            <View style={styles.buttonContainer}>
-              <Button title='START IRRIGATION' onPress={() => publishMessage('OPEN')} />
-            </View>
-            <View style={styles.buttonContainer}>
-              <Button title='STOP IRRIGATION' onPress={() => publishMessage('CLOSE')} />
-            </View>
-          </Section>
-        </View>
-      </ScrollView>
-    </SafeAreaView><Toast /></>
-  );
-}
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    contentContainer: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    sectionContainer: {
+      marginTop: 50,
+      paddingHorizontal: 24,
+      backgroundColor: Colors.white, // Set section background to white
+    },
+    backgroundWhite: {
+      backgroundColor: Colors.white,
+    },
+  
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',
@@ -189,6 +226,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 10,
+  },
+  topicText: {
+    marginTop: 10,
+    fontSize: 16,
   },
 });
 
