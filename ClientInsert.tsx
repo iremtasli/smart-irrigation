@@ -20,7 +20,7 @@ export default class ClientInsert extends Component {
   }
   
   handleSearchButtonClick = () => {
-    this.props.navigation.navigate('SetScreen'); 
+    this.props.navigation.navigate('ClientSearch'); 
   };
 
   InsertRecord = () => {
@@ -31,7 +31,7 @@ export default class ClientInsert extends Component {
     if (user_id.length === 0 || picodevices_id.length === 0 || mqtt_topics.length === 0) {
       Alert.alert("Required field is missing");
     } else {
-      var InsertAPIURL = "http://10.0.2.2:80/api/insert.php";
+      var InsertAPIURL = "http://192.168.31.232:80/api/insert.php";
   
       var headers = {
         'Accept': 'application/json',
@@ -50,6 +50,7 @@ export default class ClientInsert extends Component {
       })
         .then((response) => response.json())
         .then((response) => {
+          console.log("Parsed JSON Response:", response);
           Alert.alert(response[0].Message);
         })
         .catch((error) => {
@@ -69,52 +70,55 @@ export default class ClientInsert extends Component {
   
   render() {
     return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <View style={styles.ViewStyle}>
-          <TextInput
-            placeholder={"user_id"}
-            placeholderTextColor="#f00"
-            keyboardType={"numeric"}
-            style={styles.txtSyle}
-            onChangeText={(user_id) => this.setState({ user_id })}
-          />
-          <TextInput
-            placeholder={"picodevices_id"}
-            placeholderTextColor="#f00"
-            style={styles.txtSyle}
-            onChangeText={(picodevices_id) => this.setState({ picodevices_id })}
-          />
-          <TextInput
-            placeholder={"mqtt_topics"}
-            placeholderTextColor="#f00"
-            style={styles.txtSyle}
-            onChangeText={(mqtt_topics) => this.setState({ mqtt_topics })}
-          />
-          <Button title='Save Record' onPress={this.InsertRecord} />
+      <GestureHandlerRootView style={styles.container}>
+        <TextInput
+          placeholder={'USER ID'}
+          placeholderTextColor="black"
+          keyboardType="default"
+          style={styles.input}
+          onChangeText={(user_id) => this.setState({ user_id })}
+        />
+        <TextInput
+          placeholder={'PICO DEVICE ID'}
+          placeholderTextColor="black"
+          style={styles.input}
+          onChangeText={(picodevices_id) => this.setState({ picodevices_id })}
+        />
+        <TextInput
+          placeholder={'MQTT TOPICS'}
+          placeholderTextColor="black"
+          style={styles.input}
+          onChangeText={(mqtt_topics) => this.setState({ mqtt_topics })}
+        />
+        <View style={styles.buttonContainer}>
+          <Button title="Save Record" onPress={this.InsertRecord} />
         </View>
         
-        <View style={styles.ViewStyle}>
+        <View style={styles.buttonContainer}>
           <Button title="Devam" onPress={this.handleSearchButtonClick} />
         </View>
-      
       </GestureHandlerRootView>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  ViewStyle: {
+  container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 30,
   },
-  txtSyle: {
+  input: {
     borderColor: 'gray',
     borderWidth: 1,
     width: 200,
     height: 40,
     marginBottom: 16,
     paddingHorizontal: 8,
+  },
+  buttonContainer: {
+    width: 200,
+    marginVertical: 10,
   },
 });

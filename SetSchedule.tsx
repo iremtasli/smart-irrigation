@@ -16,8 +16,8 @@ const SetSchedule = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   
   const client = new Paho.MQTT.Client('broker.hivemq.com', 8000, 'uname');
-  client.onMessageArrived = onMessageArrived;
-  client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.onConnectionLost = onConnectionLost;
   
   useEffect(() => {
     init({
@@ -32,7 +32,7 @@ const SetSchedule = () => {
     readTopics();
     loadSelectedHours();
   }, []);
-
+  
   function onConnect() {
     console.log("onConnect");
     AsyncStorage.getItem('mqtt_topics')
@@ -57,7 +57,6 @@ const SetSchedule = () => {
 
   function onMessageArrived(message) {
     var mqttMessage = message.payloadString;
-    // Burada MQTT mesajının işlenmesi yapılabilir
     console.log(mqttMessage);
   }
 
@@ -72,6 +71,7 @@ const SetSchedule = () => {
       })
       .catch((error) => {
         console.log('Error reading mqtt_topics from AsyncStorage:', error);
+        
       });
   }
   const loadSelectedHours = async () => {
@@ -115,7 +115,7 @@ const SetSchedule = () => {
 
     const clearSavedSelectedHours = async () => {
       try {
-        await AsyncStorage.removeItem('selectedHours'); // Saklanan saatleri temizle
+        await AsyncStorage.removeItem('selectedHours');
       } catch (error) {
         console.log('Error clearing selected hours:', error);
       }
@@ -161,10 +161,11 @@ const SetSchedule = () => {
       }
     }
   
-    const mqttMessage =`clean\n${mqttMessages.join('\n')}`;
+    const mqttMessage =`${mqttMessages.join('\n')}`;
     publishMessage(mqttMessage);
   };
-  function publishMessage(message: string) {
+
+  async function publishMessage(message: string, retryCount = 3) {
     try {
       if (topics) {
         for (let topic = 0; topic < topics.length; topic++) {
@@ -178,71 +179,83 @@ const SetSchedule = () => {
         console.log('mqtt_topics not found in AsyncStorage');
       }
     } catch (error) {
+
       onConnect();
-      client.connect({onSuccess: onConnect, useSSL: false});
-      Toast.show({
-        type: 'info',
-        text1: 'Hata',
-        text2: 'Tekrar Deneyiniz',
-        visibilityTime: 3000,
-      });
+  client.connect({onSuccess: onConnect, useSSL: false});
+      console.log('Error:', error);
+
+      if (retryCount > 0) {
+        setTimeout(() => {
+          publishMessage(message, retryCount - 1);
+        }, 1000);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Hata',
+          text2: 'Tekrar Denemeleri Başarısız',
+          visibilityTime: 2000,
+        });
+      }
     }
   }
 
   return (
-    <>
-      <SafeAreaView>
-        <StatusBar barStyle="dark-content" />
-        <ScrollView contentInsetAdjustmentBehavior="automatic">
-          <View style={styles.container}>
-            <Text style={styles.title}>Haftalık Program Ayarlama</Text>
-            <View style={styles.daysContainer}>
-              {daysOfWeek.map((day, dayIndex) => (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
+        <View style={styles.container}>
+          <Text style={styles.title}>Haftalık Program Ayarlama</Text>
+          <View style={styles.daysContainer}>
+            {daysOfWeek.map((day, dayIndex) => (
+              <View key={dayIndex} style={styles.dayButtonContainer}>
                 <Button
-                  key={dayIndex}
                   title={day}
                   onPress={() => handleDayButtonPress(dayIndex)}
                   color="blue"
+                  style={styles.dayButton}
                 />
-              ))}
-            </View>
-  
-            <Modal visible={isModalVisible} animationType="slide">
-              <View style={styles.modalContainer}>
-                <Button title="Kapat" onPress={closeModal} color="blue" />
-  
-                <ScrollView>
-                  {hours.map((hour, hourIndex) => (
-                    <View key={hourIndex}>
-                      <Text>{hour}:00 - {hour + 1}:00</Text>
-                      <Switch
-                        value={selectedHours[currentDayIndex]?.[hour] || false}
-                        onValueChange={() => toggleHour(hour)}
-                      />
-                    </View>
-                  ))}
-  
-                  <View style={styles.buttonContainer}>
-                    <Button
-                      title="Programı Kaydet"
-                      onPress={sendScheduleToMQTT}
-                      color="blue"
-                    />
-                    <Button title="Programı Temizle" onPress={clearSelectedHours} color="red" />
-                  </View>
-                </ScrollView>
               </View>
-            </Modal>
+            ))}
           </View>
-          <Toast />
-        </ScrollView>
-        
-      </SafeAreaView>
-    </>
+
+          <Modal visible={isModalVisible} animationType="slide">
+            <View style={styles.modalContainer}>
+              <Button title="Kapat" onPress={closeModal} color="blue" />
+
+              <ScrollView>
+                {hours.map((hour, hourIndex) => (
+                  <View key={hourIndex} style={styles.hourContainer}>
+                    <Text style={styles.hourText}>{hour}:00 - {hour + 1}:00</Text>
+                    <Switch
+                      value={selectedHours[currentDayIndex]?.[hour] || false}
+                      onValueChange={() => toggleHour(hour)}
+                    />
+                  </View>
+                ))}
+
+                <View style={styles.buttonContainer}>
+                  <Button
+                    title="Programı Kaydet"
+                    onPress={sendScheduleToMQTT}
+                    color="blue"
+                  />
+                  <Button title="Programı Temizle" onPress={clearSelectedHours} color="red" />
+                  <View style={styles.extraSpace}></View>
+                </View>
+              </ScrollView>
+            </View>
+          </Modal>
+        </View>
+        <Toast />
+      </ScrollView>
+    </SafeAreaView>
   );
-                  }
+};
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     padding: 20,
   },
@@ -253,19 +266,35 @@ const styles = StyleSheet.create({
   },
   daysContainer: {
     flexDirection: 'column',
-    alignItems: 'center',
     marginBottom: 20,
   },
+  dayButtonContainer: {
+    marginBottom: 10,
+  },
   dayButton: {
-    width: 100, 
-    height: 100, 
-    marginBottom: 10, 
+    width: '100%',
+    height: 40,
+    backgroundColor: '#2196F3',
+    color: 'white',
+  },
+  hourContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  hourText: {
+    fontSize: 16,
+    color: 'black',
   },
   modalContainer: {
     padding: 20,
   },
   buttonContainer: {
-    marginTop: 10,
+    marginTop: 20,
+  },
+  extraSpace: {
+    marginBottom: 20, 
   },
 });
 

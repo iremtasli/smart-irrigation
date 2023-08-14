@@ -1,97 +1,125 @@
 import React, { Component } from 'react';
 import { TextInput, View, Button, StyleSheet, Alert } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default class ClientSearch extends Component {
-  styles: any;
-  constructor(props: {} | Readonly<{}>) {
+  constructor(props) {
     super(props);
-    this.state = { Finduser_id: '', user_id: '', picodevice_id: '', mqtt_topics: '' };
+    this.state = {
+      Finduser_id: '',
+      user_id: '',
+      picodevice_id: '',
+      mqtt_topics: '',
+    };
   }
 
-  handleInsertButtonClick = () => {
-    this.props.navigation.navigate('SetScreen'); // ClientInsert ekranına yönlendirme
-  };
-
   SearchRecord = () => {
-    var Finduser_id = this.state.Finduser_id;
+    const { Finduser_id } = this.state;
+
     if (Finduser_id.length === 0) {
       Alert.alert('Required field is missing');
     } else {
-      var SerachAPIURL = "http://10.0.2.2:80/api/search.php";
+      const SerachAPIURL = 'http://192.168.31.232:80/api/search.php';
 
-      var header = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+      const header = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       };
-      var Data = {
-        Finduser_id: Finduser_id
+
+      const Data = {
+        Finduser_id: Finduser_id,
       };
-      fetch(
-        SerachAPIURL,
-        {
-          method: 'POST',
-          headers: header,
-          body: JSON.stringify(Data)
-        }
-      )
+
+      fetch(SerachAPIURL, {
+        method: 'POST',
+        headers: header,
+        body: JSON.stringify(Data),
+      })
         .then((response) => response.json())
         .then((response) => {
-          this.setState({ user_id: response[0].user_id });
-          this.setState({ picodevice_id: response[0].picodevice_id });
-          this.setState({ mqtt_topics: response[0].mqtt_topics });
+          if (response && response.length > 0) {
+            const mqtt_topics = response[0].mqtt_topics; // MQTT Topics verisini al
+
+            if (mqtt_topics) {
+              const topicsArray = mqtt_topics.split(',').map((topic) => topic.trim());
+
+              // Veriyi AsyncStorage'e kaydet
+              AsyncStorage.setItem('mqtt_topics', mqtt_topics)
+                .then(() => {
+                  console.log('mqtt_topics saved to AsyncStorage');
+                })
+                .catch((error) => {
+                  console.log('Error saving mqtt_topics to AsyncStorage:', error);
+                });
+
+              // userData nesnesini oluştur
+              const userData = {
+                user_id: response[0].user_id,
+                picodevice_id: response[0].picodevice_id,
+                mqtt_topics: topicsArray,
+              };
+
+              this.props.navigation.navigate('SetScreen', {
+                userData: userData,
+              });
+            } else {
+              Alert.alert('No MQTT Topics found for the user.');
+            }
+          } else {
+            Alert.alert('User not found.');
+          }
         })
         .catch((error) => {
-          Alert.alert("Error: " + error);
+          Alert.alert('Error: ' + error);
         });
     }
   };
 
   render() {
     return (
-      <View style={styles.ViewStyle}>
+      <View style={styles.container}>
         <TextInput
-          placeholder={'Enter user id'}
+          placeholder="Enter user id"
           placeholderTextColor="#f00"
           keyboardType="numeric"
-          style={styles.txtStyle}
+          style={styles.input}
           onChangeText={(Finduser_id) => this.setState({ Finduser_id })}
         />
-        <Button
-          title="Find Record"
-          onPress={this.SearchRecord}
+        <Button title="Find Record" onPress={this.SearchRecord} />
+        <TextInput
+          style={styles.resultText}
+          value={`User ID: ${this.state.user_id}`}
+          editable={false}
         />
         <TextInput
-          style={styles.txtStyle}
-          value={this.state.user_id}
+          style={styles.resultText}
+          value={`Device ID: ${this.state.picodevice_id}`}
+          editable={false}
         />
         <TextInput
-          style={styles.txtStyle}
-          value={this.state.picodevice_id}
+          style={styles.resultText}
+          value={`MQTT Topics: ${this.state.mqtt_topics}`}
+          editable={false}
         />
-        <TextInput
-          style={styles.txtStyle}
-          value={this.state.mqtt_topics}
-        />
-        
-        <View style={styles.ViewStyle}>
-          <Button title="Devam" onPress={this.handleInsertButtonClick} />
-        </View>
-
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  ViewStyle: {
+  container: {
     flex: 1,
-    padding: 1,
+    padding: 16,
     marginTop: 10,
   },
-  txtStyle: {
+  input: {
     borderBottomWidth: 1,
     borderBottomColor: 'red',
     marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  resultText: {
+    fontSize: 16,
+    marginBottom: 10,
   },
 });

@@ -44,9 +44,10 @@ function Section({ children, title }: SectionProps): JSX.Element {
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-  const [message, setMessage] = useState('No Message Received');
-  const [topicMessage, setTopicMessage] = useState('No Message Received');
-
+  const [message, setMessage] = useState('Sensor Data');
+  const [topicMessage, setTopicMessage] = useState('Last Order');
+  const [feedbackMessage, setFeedbackMessage] = useState('Feedback');
+  const [TimeMessage, setTimeMessage] = useState('Time');
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -72,20 +73,18 @@ function App(): JSX.Element {
 
   function onConnect() {
     console.log("onConnect");
-    // AsyncStorage'tan mqtt_topics değerini alıyoruz
     AsyncStorage.getItem('mqtt_topics')
       .then((mqtt_topics) => {
         if (mqtt_topics) {
-          // Abonelik işlemini gerçekleştiriyoruz
           const topics = mqtt_topics.split(',').map((topic) => topic.trim());
           topics.forEach((topic) => client.subscribe(topic));
         } else {
           console.log('mqtt_topics not found in AsyncStorage');
         }
+        readTopics();
       })
       .catch((error) => {
         console.log('Error reading mqtt_topics from AsyncStorage:', error);
-        
       });
   }
 
@@ -101,7 +100,6 @@ function App(): JSX.Element {
     AsyncStorage.getItem('mqtt_topics')
     .then((mqtt_topics) => {
       if (mqtt_topics) {
-        // Abonelik işlemini gerçekleştiriyoruz
         const topics = mqtt_topics.split(',').map((topic) => topic.trim());
         
         if (message.destinationName === topics[1]) {
@@ -111,6 +109,12 @@ function App(): JSX.Element {
         if (message.destinationName === topics[0]) {
           setTopicMessage(mqttMessage);
         }
+        if (message.destinationName === topics[2]) {
+          setFeedbackMessage(mqttMessage);
+        }
+        if (message.destinationName === topics[3]) {
+          setTimeMessage(mqttMessage);
+        }
       } else {
         console.log('mqtt_topics not found in AsyncStorage');
       }
@@ -119,14 +123,10 @@ function App(): JSX.Element {
     console.log(mqttMessage);
   }
 
-
-
-
   function readTopics(){
     AsyncStorage.getItem('mqtt_topics')
     .then((mqtt_topics) => {
       if (mqtt_topics) {
-        // Abonelik işlemini gerçekleştiriyoruz
         topics = mqtt_topics.split(',').map((topic) => topic.trim());
 
       } else {
@@ -135,15 +135,14 @@ function App(): JSX.Element {
     })
     .catch((error) => {
       console.log('Error reading mqtt_topics from AsyncStorage:', error);
+      client.connect({ onSuccess: onConnect, useSSL: false });
     });
   }
 
-  function publishMessage(message: string) {
+  async function publishMessage(message: string, retryCount = 3) {
+    
     try {
-      // AsyncStorage'tan mqtt_topics değerini alıyoruz
           if (topics) {
-            // Abonelik işlemini gerçekleştiriyoruz
-            // Mesajı alınan konulara gönderiyoruz
             for (let topic = 0; topic < topics.length; topic++) {
               if(topic===0){
                 var mqttMessage = new Paho.MQTT.Message(message);
@@ -155,18 +154,26 @@ function App(): JSX.Element {
           } else {
             console.log('mqtt_topics not found in AsyncStorage');
           }
-    } catch (error) {
-      onConnect();
+        } catch (error) {
+
+          onConnect();
       client.connect({onSuccess: onConnect, useSSL: false});
-      // publishMessage(message);
-      Toast.show({
-        type: 'info',
-        text1: 'Hata',
-        text2: 'Tekrar Deneyiniz',
-        visibilityTime: 1000,
-      });
-    }
-  }
+          console.log('Error:', error);
+    
+          if (retryCount > 0) {
+            setTimeout(() => {
+              publishMessage(message, retryCount - 1);
+            }, 1000); 
+          } else {
+            Toast.show({
+              type: 'error',
+              text1: 'Hata',
+              text2: 'Tekrar Denemeleri Başarısız',
+              visibilityTime: 2000,
+            });
+          }
+        }
+      }
 
 
   return (
@@ -191,6 +198,7 @@ function App(): JSX.Element {
                 <Button title='STOP IRRIGATION' onPress={() => publishMessage('CLOSE')} />
               </View>
               <Text style={styles.topicText}>Last Order: {topicMessage}</Text>
+              <Text style={styles.topicText}>*** {TimeMessage}</Text>
             </Section>
           </View>
         </ScrollView>
@@ -210,7 +218,7 @@ function App(): JSX.Element {
     sectionContainer: {
       marginTop: 50,
       paddingHorizontal: 24,
-      backgroundColor: Colors.white, // Set section background to white
+      backgroundColor: Colors.white, 
     },
     backgroundWhite: {
       backgroundColor: Colors.white,
