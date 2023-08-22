@@ -79,9 +79,9 @@ export default class ClientSearch extends Component {
     return (
       <View style={styles.container}>
         <TextInput
-          placeholder="Enter user id"
-          placeholderTextColor="#f00"
-          keyboardType="numeric"
+          placeholder="Enter your username"
+          placeholderTextColor="black"
+          keyboardType="default"
           style={styles.input}
           onChangeText={(Finduser_id) => this.setState({ Finduser_id })}
         />
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderBottomWidth: 1,
-    borderBottomColor: 'red',
+    borderBottomColor: 'black',
     marginBottom: 20,
     paddingHorizontal: 8,
   },

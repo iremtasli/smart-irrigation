@@ -1,5 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Button, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 
 const SetScreen = ({ route, navigation }) => {
   const { userData } = route.params;
@@ -9,22 +12,33 @@ const SetScreen = ({ route, navigation }) => {
   };
 
   const handlePlanClick = () => {
+   
     navigation.navigate('SetSchedule');
+  };
+
+  const handleDataClick = () => {
+   
+    navigation.navigate('data');
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Kullanıcı Bilgileri</Text>
+      <Text style={styles.title}>Farm Information</Text>
       <Text style={styles.text}>User ID: {userData.user_id}</Text>
       <Text style={styles.text}>Picodevice ID: {userData.picodevice_id}</Text>
       <Text style={styles.text}>MQTT Topics: {userData.mqtt_topics.join(', ')}</Text>
 
+      
+      <View style={styles.buttonContainer}>
+        <Button title="See Data" onPress={handleDataClick} />
+      </View>
       <View style={styles.buttonContainer}>
         <Button title="Do Manual" onPress={handleManualClick} />
       </View>
       <View style={styles.buttonContainer}>
         <Button title="Plan Irrigation" onPress={handlePlanClick} />
       </View>
+      
     </View>
   );
 };

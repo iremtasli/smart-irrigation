@@ -20,7 +20,7 @@ export default class ClientInsert extends Component {
   }
   
   handleSearchButtonClick = () => {
-    this.props.navigation.navigate('ClientSearch'); 
+    this.props.navigation.navigate('ClientSearch'); // değiştir
   };
 
   InsertRecord = () => {

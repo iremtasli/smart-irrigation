@@ -2,35 +2,39 @@ import React, { useEffect, useState } from 'react';
 import init from 'react_native_mqtt';
 import { Button, ScrollView, Switch, Modal, Text, View,StyleSheet,SafeAreaView, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
 
+
+
 const SetSchedule = () => {
-  const daysOfWeek = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+  const daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   const initialHoursArray = daysOfWeek.map(() => Array(24).fill(false));
   const [selectedHours, setSelectedHours] = useState(initialHoursArray);
   const [currentDayIndex, setCurrentDayIndex] = useState<number | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
-  
+  init({
+    size: 10000,
+    storageBackend: AsyncStorage,
+    defaultExpires: 1000 * 3600 * 24,
+    enableCache: true,
+    reconnect: true,
+    sync: {}
+  });
+
   const client = new Paho.MQTT.Client('broker.hivemq.com', 8000, 'uname');
     client.onMessageArrived = onMessageArrived;
     client.onConnectionLost = onConnectionLost;
   
+  
   useEffect(() => {
-    init({
-      size: 10000,
-      storageBackend: AsyncStorage,
-      defaultExpires: 1000 * 3600 * 24,
-      enableCache: true,
-      reconnect: true,
-      sync: {}
-    });
+    
     client.connect({ onSuccess: onConnect, useSSL: false });
     readTopics();
     loadSelectedHours();
+    
   }, []);
   
   function onConnect() {
@@ -62,17 +66,16 @@ const SetSchedule = () => {
 
   function readTopics() {
     AsyncStorage.getItem('mqtt_topics')
-      .then((mqtt_topics) => {
-        if (mqtt_topics) {
-          topics = mqtt_topics.split(',').map((topic) => topic.trim());
-        } else {
-          console.log('mqtt_topics not found in AsyncStorage');
-        }
-      })
-      .catch((error) => {
-        console.log('Error reading mqtt_topics from AsyncStorage:', error);
-        
-      });
+  .then((mqtt_topics) => {
+    if (mqtt_topics) {
+      topics = mqtt_topics.split(',').map((topic) => topic.trim());
+    } else {
+      console.log('mqtt_topics not found in AsyncStorage');
+    }
+  })
+  .catch((error) => {
+    console.log('Error reading mqtt_topics from AsyncStorage:', error);
+  });
   }
   const loadSelectedHours = async () => {
     try {
@@ -204,7 +207,7 @@ const SetSchedule = () => {
       <StatusBar barStyle="dark-content" />
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         <View style={styles.container}>
-          <Text style={styles.title}>Haftalık Program Ayarlama</Text>
+          <Text style={styles.title}>Weekly Irrigation Schedule</Text>
           <View style={styles.daysContainer}>
             {daysOfWeek.map((day, dayIndex) => (
               <View key={dayIndex} style={styles.dayButtonContainer}>
@@ -220,7 +223,7 @@ const SetSchedule = () => {
 
           <Modal visible={isModalVisible} animationType="slide">
             <View style={styles.modalContainer}>
-              <Button title="Kapat" onPress={closeModal} color="blue" />
+              <Button title="Close Page" onPress={closeModal} color="blue" />
 
               <ScrollView>
                 {hours.map((hour, hourIndex) => (
@@ -235,11 +238,11 @@ const SetSchedule = () => {
 
                 <View style={styles.buttonContainer}>
                   <Button
-                    title="Programı Kaydet"
+                    title="Save Program"
                     onPress={sendScheduleToMQTT}
                     color="blue"
                   />
-                  <Button title="Programı Temizle" onPress={clearSelectedHours} color="red" />
+                  <Button title="Clear Program" onPress={clearSelectedHours} color="red" />
                   <View style={styles.extraSpace}></View>
                 </View>
               </ScrollView>

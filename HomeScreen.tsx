@@ -29,19 +29,19 @@ export default class HomeScreen extends Component {
 
     return (
       <View style={styles.container}>
-        <Animated.Text style={[styles.text, animatedStyle]}>Daha önce kayıt oldunuz mu?</Animated.Text>
+        <Animated.Text style={[styles.text, animatedStyle]}>Have you registered before?</Animated.Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#2196F3' }]}
             onPress={() => this.props.navigation.navigate('ClientSearch')}
           >
-            <Text style={styles.buttonText}>Evet</Text>
+            <Text style={styles.buttonText}> Yes </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#FF5722' }]}
             onPress={() => this.props.navigation.navigate('ClientInsert')}
           >
-            <Text style={styles.buttonText}>Hayır</Text>
+            <Text style={styles.buttonText}>  No  </Text>
           </TouchableOpacity>
         </View>
       </View>

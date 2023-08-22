@@ -9,18 +9,21 @@ import SetScreen from './SetScreen';
 import MqttManual from './MqttManual';
 import SetSchedule from './SetSchedule';
 
+import data from './data';
+
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Ana Sayfa' }} />
-        <Stack.Screen name="ClientInsert" component={ClientInsert} options={{ title: 'Kayıt Ekle' }} />
-        <Stack.Screen name="ClientSearch" component={ClientSearch} options={{ title: 'Kayıt Ara' }} />
-        <Stack.Screen name="SetScreen" component={SetScreen} options={{ title: 'sulama yöntemi seç' }} />
-        <Stack.Screen name="MqttManual" component={MqttManual} options={{ title: 'verileri gör' }} />
-        <Stack.Screen name="SetSchedule" component={SetSchedule} options={{ title: 'sulamayı planla' }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+        <Stack.Screen name="ClientInsert" component={ClientInsert} options={{ title: 'Insert Registration' }} />
+        <Stack.Screen name="ClientSearch" component={ClientSearch} options={{ title: 'Search Registration' }} />
+        <Stack.Screen name="SetScreen" component={SetScreen} options={{ title: 'Choose Irrigation Method' }} />
+        <Stack.Screen name="MqttManual" component={MqttManual} options={{ title: 'Manual Irrigation' }} />
+        <Stack.Screen name="SetSchedule" component={SetSchedule} options={{ title: 'Automatic Irrigation' }} />
+        <Stack.Screen name="data" component={data} options={{ title: 'View Data' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

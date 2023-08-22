@@ -1,10 +1,3 @@
-// 0 - gönderilen emir
-// 1 - nem sensörü
-// 2 - feedback
-// 3 - havadurumu
-// 4 - saat
-//  
-
 import React, { useEffect, useState } from 'react';
 import init from 'react_native_mqtt';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -51,10 +44,10 @@ function Section({ children, title }: SectionProps): JSX.Element {
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
- 
-  const [topicMessage, setTopicMessage] = useState('Last Order');
-  const [feedbackMessage, setFeedbackMessage] = useState('Feedback');
+  const [message, setMessage] = useState('Sensor Data');
   const [TimeMessage, setTimeMessage] = useState('Time');
+  const [weatherMessage, setweatherMessage] = useState('Weather');
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -109,17 +102,16 @@ function App(): JSX.Element {
       if (mqtt_topics) {
         const topics = mqtt_topics.split(',').map((topic) => topic.trim());
         
-        
-
-        if (message.destinationName === topics[0]) {
-          setTopicMessage(mqttMessage);
-        }
-        if (message.destinationName === topics[2]) {
-          setFeedbackMessage(mqttMessage);
+        if (message.destinationName === topics[1]) {
+          setMessage(mqttMessage);
         }
         if (message.destinationName === topics[4]) {
           setTimeMessage(mqttMessage);
         }
+        if (message.destinationName === topics[3]) {
+          setweatherMessage(mqttMessage);
+        }
+
       } else {
         console.log('mqtt_topics not found in AsyncStorage');
       }
@@ -144,41 +136,6 @@ function App(): JSX.Element {
     });
   }
 
-  async function publishMessage(message: string, retryCount = 3) {
-    
-    try {
-          if (topics) {
-            for (let topic = 0; topic < topics.length; topic++) {
-              if(topic===0){
-                var mqttMessage = new Paho.MQTT.Message(message);
-                mqttMessage.destinationName = topics[0];
-                client.send(mqttMessage);
-              }
-            }
-
-          } else {
-            console.log('mqtt_topics not found in AsyncStorage');
-          }
-        } catch (error) {
-
-          onConnect();
-      client.connect({onSuccess: onConnect, useSSL: false});
-          console.log('Error:', error);
-    
-          if (retryCount > 0) {
-            setTimeout(() => {
-              publishMessage(message, retryCount - 1);
-            }, 1000); 
-          } else {
-            Toast.show({
-              type: 'error',
-              text1: 'Hata',
-              text2: 'Tekrar Denemeleri Başarısız',
-              visibilityTime: 2000,
-            });
-          }
-        }
-      }
 
 
   return (
@@ -191,18 +148,10 @@ function App(): JSX.Element {
         contentInsetAdjustmentBehavior="automatic"
         style={styles.backgroundWhite}>
         <View style={styles.sectionContainer}>
-            
-  
-            <Section title='CONTROL YOUR FARM'>
-              <View style={styles.buttonContainer}>
-                <Button title='START IRRIGATION' onPress={() => publishMessage('OPEN')} />
-              </View>
-              <View style={styles.buttonContainer}>
-                <Button title='STOP IRRIGATION' onPress={() => publishMessage('CLOSE')} />
-              </View>
-              <Text style={styles.topicText}>Last Order: {topicMessage}</Text>
-              <Text style={styles.topicText}> {TimeMessage}</Text>
-              <Text style={styles.topicText}> {feedbackMessage}</Text>
+            <Section title='FARM DATA'>
+              <Text style={styles.highlight}>{message}</Text>
+              <Text style={styles.highlight}>{weatherMessage}</Text>
+              <Text style={styles.highlight}>{TimeMessage}</Text>
             </Section>
           </View>
         </ScrollView>
