@@ -104,9 +104,9 @@ android {
 }
 tasks.register("prepareKotlinBuildScriptModel"){}
 dependencies {
+    implementation project(':react-native-bluetooth-serial-next')
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
-
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
         exclude group:'com.squareup.okhttp3', module:'okhttp'

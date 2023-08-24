@@ -39,7 +39,7 @@ export default class HomeScreen extends Component {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: '#FF5722' }]}
-            onPress={() => this.props.navigation.navigate('ClientInsert')}
+            onPress={() => this.props.navigation.navigate('BluetoothScreen')}
           >
             <Text style={styles.buttonText}>  No  </Text>
           </TouchableOpacity>

@@ -8,6 +8,7 @@ import HomeScreen from './HomeScreen';
 import SetScreen from './SetScreen';
 import MqttManual from './MqttManual';
 import SetSchedule from './SetSchedule';
+import BluetoothScreen from './BluetoothScreen';
 
 import data from './data';
 
@@ -24,6 +25,7 @@ const App = () => {
         <Stack.Screen name="MqttManual" component={MqttManual} options={{ title: 'Manual Irrigation' }} />
         <Stack.Screen name="SetSchedule" component={SetSchedule} options={{ title: 'Automatic Irrigation' }} />
         <Stack.Screen name="data" component={data} options={{ title: 'View Data' }} />
+        <Stack.Screen name="BluetoothScreen" component={BluetoothScreen} options={{ title: 'BluetoothScreen' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
