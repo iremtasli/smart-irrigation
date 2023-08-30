@@ -4,9 +4,6 @@ import { Button, ScrollView, Switch, Modal, Text, View,StyleSheet,SafeAreaView, 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Toast} from 'react-native-toast-message/lib/src/Toast';
 
-
-
-
 const SetSchedule = () => {
   const daysOfWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   const hours = Array.from({ length: 24 }, (_, i) => i);

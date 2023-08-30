@@ -73,18 +73,11 @@ const App = () => {
     }, 5000);
   
     return () => {
-      BluetoothSerial.removeAllListeners('data'); // Temizleme işlemi
+      BluetoothSerial.removeAllListeners('data'); 
       clearInterval(interval);
     };
   }, [message]);
   
-  
-
-
-
-
-
-
   useEffect(() => {
     BluetoothSerial.list().then((devices) => {
       setAvailableDevices(devices);
@@ -161,7 +154,7 @@ const App = () => {
       </View>
       <Button title="WiFi Verisini Gönder" onPress={sendText} />
       <Button title="Bluetooth Cihazları" onPress={openBluetoothModal} />
-      <Button title="Devam Et" onPress={navigateToClientInsert} />
+      
 
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
         <View style={styles.modalContainer}>

@@ -16,12 +16,12 @@ export default class ClientInsert extends Component {
     });
     super(props);
     this.state = {
-      user_id: '', // Kullanıcıdan alınacak
+      user_id: '', // get from user
     };
   }
 
   handleSearchButtonClick = () => {
-    this.props.navigation.navigate('ClientSearch'); // Değiştir
+    this.props.navigation.navigate('ClientSearch'); 
   };
 
   InsertRecord = () => {
@@ -38,8 +38,8 @@ export default class ClientInsert extends Component {
       };
       var Data = {
         user_id: user_id,
-        picodevices_id: this.props.route.params.picoDeviceId, // Bluetooth üzerinden gelen veri
-        mqtt_topics: this.props.route.params.mqttTopics.join(', '), // Bluetooth üzerinden gelen veri
+        picodevices_id: this.props.route.params.picoDeviceId, // get from bluetooth
+        mqtt_topics: this.props.route.params.mqttTopics.join(', '), // get from bluetooth
       };
 
       fetch(InsertAPIURL, {
@@ -56,7 +56,7 @@ export default class ClientInsert extends Component {
           Alert.alert('Error: ' + error);
         });
 
-      // Veriyi AsyncStorage'e kaydet
+      // save data in AsyncStorage
       AsyncStorage.setItem('mqtt_topics', this.props.route.params.mqttTopics.join(', '))
         .then(() => {
           console.log('mqtt_topics saved to AsyncStorage');
@@ -108,10 +108,6 @@ const styles = StyleSheet.create({
     marginBottom:16,
     paddingHorizontal:8,
   },
-  // label: {
-  //   fontSize: 16,
-  //   marginBottom: 10,
-  // },
   buttonContainer: {
     width: 200,
     marginVertical: 10,

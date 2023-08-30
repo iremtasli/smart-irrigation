@@ -9,7 +9,6 @@ import SetScreen from './SetScreen';
 import MqttManual from './MqttManual';
 import SetSchedule from './SetSchedule';
 import BluetoothScreen from './BluetoothScreen';
-
 import data from './data';
 
 const Stack = createStackNavigator();

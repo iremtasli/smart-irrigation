@@ -38,12 +38,12 @@ export default class ClientSearch extends Component {
         .then((response) => response.json())
         .then((response) => {
           if (response && response.length > 0) {
-            const mqtt_topics = response[0].mqtt_topics; // MQTT Topics verisini al
+            const mqtt_topics = response[0].mqtt_topics; // Get MQTT Topics 
 
             if (mqtt_topics) {
               const topicsArray = mqtt_topics.split(',').map((topic) => topic.trim());
 
-              // Veriyi AsyncStorage'e kaydet
+              // save data in AsyncStorage
               AsyncStorage.setItem('mqtt_topics', mqtt_topics)
                 .then(() => {
                   console.log('mqtt_topics saved to AsyncStorage');
@@ -52,7 +52,7 @@ export default class ClientSearch extends Component {
                   console.log('Error saving mqtt_topics to AsyncStorage:', error);
                 });
 
-              // userData nesnesini oluştur
+              // userData 
               const userData = {
                 user_id: response[0].user_id,
                 picodevice_id: response[0].picodevice_id,

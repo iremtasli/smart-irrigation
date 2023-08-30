@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Button, Text } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 
